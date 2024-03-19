@@ -2,7 +2,8 @@ from django.http import HttpResponseServerError
 from rest_framework import serializers, status
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rockapi.models import Rock
+from django.contrib.auth.models import User
+from rockapi.models import Rock, Type
 
 
 class RockView(ViewSet):
@@ -33,9 +34,25 @@ class RockView(ViewSet):
             return HttpResponseServerError(ex)
 
 
-class RockSerializer(serializers.ModelSerializer):
+class RockOwnerSerializer(serializers.ModelSerializer):
     """JSON serializer"""
 
     class Meta:
+        model = User
+        fields = ( 'first_name', 'last_name' )
+
+class RockTypeSerializer(serializers.ModelSerializer):
+    """JSON serializer"""
+
+    class Meta:
+        model = Type
+        fields = ( 'label', )
+
+class RockSerializer(serializers.ModelSerializer):
+    """JSON serializer"""
+    type = RockTypeSerializer(many=False)
+    user = RockOwnerSerializer(many=False)
+
+    class Meta:
         model = Rock
-        fields = ( 'id', 'name', 'weight', )
+        fields = ( 'id', 'name', 'weight', 'user', 'type' )
